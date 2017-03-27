@@ -7,7 +7,7 @@ var routes = require('./routes');
 var app = express();
 app.use(bodyparser.urlencoded({extended: true}));
 app.use(bodyparser.json());
-app.use(express.static('./'))
+app.use(express.static(__dirname));
 
 var serverPort = process.env.SERVER_PORT || 8000;
 var metricsPort = process.env.METRICS_PORT || 8091;
