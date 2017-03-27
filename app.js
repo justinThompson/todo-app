@@ -6,7 +6,7 @@ var routes = require('./routes');
 var app = express();
 app.use(bodyparser.urlencoded({extended: true}));
 app.use(bodyparser.json());
-app.use(express.static('front-end'))
+app.use(express.static('./'))
 
 
 connection.init();
