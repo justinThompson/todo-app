@@ -9,16 +9,24 @@ app.use(bodyparser.urlencoded({extended: true}));
 app.use(bodyparser.json());
 app.use(express.static('front-end'));
 
-// TODO: inject config / environment variable
-var serverPort = 8000;
-var metricsPort = 8091;
+var serverPort = process.env.SERVER_PORT || 8000;
+var metricsPort = process.env.METRICS_PORT || 8091;
 
-// start a metrics server
 app.use(expressMetrics({
   port: metricsPort
 }));
 
-connection.init();
+var error = function(msg) {
+  throw msg;
+};
+
+var dbHost = process.env.DB_HOST || error("Missing configuration: DB_HOST");
+var dbPort = process.env.DB_PORT || error("Missing configuration: DB_PORT");
+var dbUser = process.env.DB_USER || error("Missing configuration: DB_USER");
+var dbPassword = process.env.DB_PASSWORD || error("Missing configuration: DB_PASSWORD");
+var dbName = process.env.DB_NAME || error("Missing configuration: DB_NAME");
+
+connection.init(dbHost, dbPort, dbUser, dbPassword, dbName);
 routes.configure(app);
 
 var server = app.listen(serverPort, function() {
