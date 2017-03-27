@@ -17,7 +17,7 @@ function Todo() {
         if (err) {
           res.send({status: 1, message: 'TODO creation failed'});
         } else {
-          res.send({status: 0, message: 'TODO created successfully'});
+          res.send({status: 0, message: 'TODO created successfully', id: result.insertId});
         }
       });
     });
