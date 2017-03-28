@@ -38,7 +38,7 @@
 					<span id="todo-count"><strong>{{remainingCount}}</strong>
 						<ng-pluralize count="remainingCount" when="{ one: 'item left', other: 'items left' }"></ng-pluralize>
 					</span>
-					<ul id="filters">
+					<!-- <ul id="filters">
 						<li>
 							<a ng-class="{selected: status == ''} " href="#/">All</a>
 						</li>
@@ -48,7 +48,7 @@
 						<li>
 							<a ng-class="{selected: status == 'completed'}" href="#/completed">Completed</a>
 						</li>
-					</ul>
+					</ul> -->
 					<button id="clear-completed" ng-click="clearCompletedTodos()" ng-show="completedCount">Clear completed</button>
 				</footer>
 			</section>
