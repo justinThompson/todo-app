@@ -1,34 +1,61 @@
 var express = require('express');
+var bodyParser = require('body-parser');
+var mysql = require('mysql');
+var api = require('./api');
 var expressMetrics = require('express-metrics');
-var bodyparser = require('body-parser');
-var connection = require('./connection');
-var routes = require('./routes');
 
 var app = express();
-app.use(bodyparser.urlencoded({extended: true}));
-app.use(bodyparser.json());
+var pool;
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
 app.use(express.static(__dirname));
-
-var serverPort = process.env.SERVER_PORT || 8000;
-var metricsPort = process.env.METRICS_PORT || 8091;
-
-app.use(expressMetrics({
-  port: metricsPort
-}));
 
 var error = function(msg) {
   throw msg;
 };
 
-var dbHost = process.env.DB_HOST || error("Missing configuration: DB_HOST");
-var dbPort = process.env.DB_PORT || error("Missing configuration: DB_PORT");
-var dbUser = process.env.DB_USER || error("Missing configuration: DB_USER");
-var dbPassword = process.env.DB_PASSWORD || error("Missing configuration: DB_PASSWORD");
-var dbName = process.env.DB_NAME || error("Missing configuration: DB_NAME");
+var initDatabaseConnection = function () {
+  var host = process.env.DB_HOST || error("Missing configuration: DB_HOST");
+  var port = process.env.DB_PORT || error("Missing configuration: DB_PORT");
+  var user = process.env.DB_USER || error("Missing configuration: DB_USER");
+  var password = process.env.DB_PASSWORD || error("Missing configuration: DB_PASSWORD");
+  var database = process.env.DB_NAME || error("Missing configuration: DB_NAME");
 
-connection.init(dbHost, dbPort, dbUser, dbPassword, dbName);
-routes.configure(app);
+  console.log("Connecting to " + user + "@" + host + ":" + port + "/" + database);
+  pool = mysql.createPool({
+    connectionLimit: 10,
+    host: host,
+    port: port,
+    user: user,
+    password: password,
+    database: database
+  });
+};
 
-var server = app.listen(serverPort, function() {
-  console.log('Server listening on port ' + server.address().port);
-});
+app.mySqlConnection = function (callback) {
+  pool.getConnection(function (err, connection) {
+    callback(err, connection);
+  });
+}
+
+var configureMetrics = function () {
+  var metricsPort = process.env.METRICS_PORT || 8091;
+  app.use(expressMetrics({
+    port: metricsPort
+  }));
+  console.log('Configured express metrics on port ' + metricsPort);
+};
+
+var startServer = function () {
+  var serverPort = process.env.SERVER_PORT || 8000;
+  app.listen(serverPort, function () {
+    console.log('Started server on port ' + serverPort);
+  });
+};
+
+initDatabaseConnection();
+configureMetrics();
+api.configure(app);
+startServer();
+
+
